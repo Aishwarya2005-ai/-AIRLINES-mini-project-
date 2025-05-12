@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Airline Passenger Database</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(120deg, #3a86ff, #00d4ff);
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+  #app {
+    background: #fff;
+    width: 350px;
+    max-height: 600px;
+    border-radius: 16px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.23);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    background-color: #0077cc;
+    color: white;
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    user-select: none;
+    border-radius: 16px 16px 0 0;
+  }
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 15px;
+  }
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  thead tr {
+    background: #0077cc;
+    color: white;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) {
+    background: #f0f8ff;
+  }
+  tbody tr:hover {
+    background: #d0e4ff;
+  }
+  /* Buttons in table */
+  .action-btn {
+    background-color: #00aaff;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    margin: 0 2px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.3s ease;
+  }
+  .action-btn:hover {
+    background-color: #0090d4;
+  }
+  .delete-btn {
+    background-color: #e55a5a;
+  }
+  .delete-btn:hover {
+    background-color: #b73c3c;
+  }
+  /* Add Passenger form */
+  #add-passenger-form {
+    background: #eef7ff;
+    padding: 14px 16px;
+    border-top: 3px solid #0077cc;
+  }
+  #add-passenger-form h2 {
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #0077cc;
+  }
+  #add-passenger-form label {
+    display: block;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    color: #333;
+  }
+  #add-passenger-form input {
+    width: 100%;
+    padding: 8px 9px;
+    margin-top: 4px;
+    border: 1.8px solid #0077cc;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+  }
+  #add-passenger-form input:focus {
+    outline: none;
+    border-color: #00c2ff;
+    box-shadow: 0 0 7px #00c2ff;
+  }
+  #add-passenger-form button {
+    margin-top: 14px;
+    width: 100%;
+    padding: 11px 0;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #add-passenger-form button:hover {
+    background: #005ea3;
+  }
+  /* Modal styling */
+  #edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+    z-index: 9999;
+  }
+  #edit-modal.active {
+    display: flex;
+  }
+  #edit-modal .modal-content {
+    background: #fff;
+    border-radius: 18px;
+    max-width: 340px;
+    width: 100%;
+    padding: 25px 30px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+    font-size: 0.95rem;
+  }
+  #edit-modal .modal-header {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #0077cc;
+  }
+  #edit-modal label {
+    font-size: 0.85rem;
+    color: #222;
+    display: block;
+    margin-top: 12px;
+  }
+  #edit-modal input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1.8px solid #0077cc;
+    border-radius: 11px;
+    margin-top: 6px;
+    font-size: 0.95rem;
+  }
+  #edit-modal .buttons {
+    margin-top: 22px;
+    display: flex;
+    justify-content: space-between;
+  }
+  #edit-modal button {
+    padding: 11px 23px;
+    border: none;
+    border-radius: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    flex: 1;
+    margin: 0 6px;
+    transition: background-color 0.3s ease;
+  }
+  #edit-modal button.save {
+    background: #0077cc;
+    color: #fff;
+  }
+  #edit-modal button.save:hover {
+    background: #005a99;
+  }
+  #edit-modal button.cancel {
+    background: #ccc;
+    color: #333;
+  }
+  #edit-modal button.cancel:hover {
+    background: #aaa;
+  }
+  /* Scrollbar styling */
+  main::-webkit-scrollbar {
+    width: 8px;
+  }
+  main::-webkit-scrollbar-thumb {
+    background-color: #0077cc;
+    border-radius: 12px;
+  }
+  main::-webkit-scrollbar-track {
+    background: #e0eaff;
+  }
+  /* Responsive fallback */
+  @media (max-width: 350px) {
+    #app {
+      width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+      min-height: 600px;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app" role="application" aria-label="Airline Passenger Database">
+  <header>Passenger Database</header>
+  <main>
+    <table aria-live="polite" aria-relevant="all" aria-label="Passenger list">
+      <thead>
+      <tr>
+        <th>Passenger ID</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Flight No.</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody id="passenger-table-body">
+        <tr><td colspan="6" style="text-align:center;color:#555;font-style:italic;">No passengers found. Please add passengers.</td></tr>
+      </tbody>
+    </table>
+  </main>
+  <form id="add-passenger-form" aria-label="Add new passenger form">
+    <h2>Add Passenger</h2>
+    <label for="passenger-id">Passenger ID</label>
+    <input type="text" id="passenger-id" name="passenger-id" placeholder="e.g. P001" required pattern="[A-Za-z0-9]{2,8}" title="2 to 8 alphanumeric characters" />
+    
+    <label for="passenger-name">Name</label>
+    <input type="text" id="passenger-name" name="passenger-name" placeholder="John Doe" required minlength="2" />
+    
+    <label for="passenger-age">Age</label>
+    <input type="number" id="passenger-age" name="passenger-age" placeholder="25" required min="0" max="120" />
+    
+    <label for="passenger-gender">Gender</label>
+    <input type="text" id="passenger-gender" name="passenger-gender" placeholder="Male / Female / Other" required minlength="2" />
+    
+    <label for="passenger-flight">Flight Number</label>
+    <input type="text" id="passenger-flight" name="passenger-flight" placeholder="e.g. AA123" required pattern="[A-Za-z0-9]{2,8}" title="2 to 8 alphanumeric characters" />
+    
+    <button type="submit" aria-label="Add passenger">Add Passenger</button>
+  </form>
+</div>
+
+<!-- Edit Passenger Modal -->
+<div id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header" id="edit-modal-title">Edit Passenger</div>
+    <form id="edit-passenger-form">
+      <label for="edit-passenger-id">Passenger ID</label>
+      <input type="text" id="edit-passenger-id" name="edit-passenger-id" required pattern="[A-Za-z0-9]{2,8}" title="2 to 8 alphanumeric characters" />
+      
+      <label for="edit-passenger-name">Name</label>
+      <input type="text" id="edit-passenger-name" name="edit-passenger-name" required minlength="2" />
+      
+      <label for="edit-passenger-age">Age</label>
+      <input type="number" id="edit-passenger-age" name="edit-passenger-age" required min="0" max="120" />
+      
+      <label for="edit-passenger-gender">Gender</label>
+      <input type="text" id="edit-passenger-gender" name="edit-passenger-gender" required minlength="2" />
+      
+      <label for="edit-passenger-flight">Flight Number</label>
+      <input type="text" id="edit-passenger-flight" name="edit-passenger-flight" required pattern="[A-Za-z0-9]{2,8}" title="2 to 8 alphanumeric characters" />
+      
+      <div class="buttons">
+        <button type="submit" class="save" aria-label="Save passenger changes">Save</button>
+        <button type="button" class="cancel" aria-label="Cancel passenger editing">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (() => {
+    let passengers = JSON.parse(localStorage.getItem('airline_passengers_db')) || [];
+
+    const tbody = document.getElementById('passenger-table-body');
+    const addForm = document.getElementById('add-passenger-form');
+    const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-passenger-form');
+
+    let editingIndex = null;
+
+    function savePassengers() {
+      localStorage.setItem('airline_passengers_db', JSON.stringify(passengers));
+    }
+
+    function renderPassengers() {
+      tbody.innerHTML = '';
+
+      if (passengers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#555;font-style:italic;">No passengers found. Please add passengers.</td></tr>';
+        return;
+      }
+
+      passengers.forEach((p, index) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('tabindex', '0');
+        tr.setAttribute('aria-label', Passenger ID ${p.id}, Name ${p.name}, Age ${p.age}, Gender ${p.gender}. Flight Number ${p.flightNumber});
+
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.age}</td>
+          <td>${p.gender}</td>
+          <td>${p.flightNumber}</td>
+          <td>
+            <button class="action-btn edit-btn" aria-label="Edit passenger ${p.id}" data-index="${index}">Edit</button>
+            <button class="action-btn delete-btn" aria-label="Delete passenger ${p.id}" data-index="${index}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      attachRowEventListeners();
+    }
+
+    function attachRowEventListeners() {
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = e.target.getAttribute('data-index');
+          openEditModal(idx);
+        });
+      });
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = e.target.getAttribute('data-index');
+          if (confirm('Are you sure you want to delete this passenger?')) {
+            passengers.splice(idx, 1);
+            savePassengers();
+            renderPassengers();
+          }
+        });
+      });
+    }
+
+    addForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const newPassenger = {
+        id: addForm.elements['passenger-id'].value.trim().toUpperCase(),
+        name: addForm.elements['passenger-name'].value.trim(),
+        age: parseInt(addForm.elements['passenger-age'].value, 10),
+        gender: addForm.elements['passenger-gender'].value.trim(),
+        flightNumber: addForm.elements['passenger-flight'].value.trim().toUpperCase(),
+      };
+
+      if(passengers.some(p => p.id === newPassenger.id)) {
+        alert('Passenger ID already exists.');
+        return;
+      }
+
+      passengers.push(newPassenger);
+      savePassengers();
+      renderPassengers();
+      addForm.reset();
+    });
+
+    function openEditModal(index) {
+      editingIndex = index;
+      const p = passengers[index];
+      editForm.elements['edit-passenger-id'].value = p.id;
+      editForm.elements['edit-passenger-name'].value = p.name;
+      editForm.elements['edit-passenger-age'].value = p.age;
+      editForm.elements['edit-passenger-gender'].value = p.gender;
+      editForm.elements['edit-passenger-flight'].value = p.flightNumber;
+
+      editModal.classList.add('active');
+      editModal.setAttribute('aria-hidden', 'false');
+
+      editForm.elements['edit-passenger-id'].focus();
+    }
+
+    function closeEditModal() {
+      editingIndex = null;
+      editModal.classList.remove('active');
+      editModal.setAttribute('aria-hidden', 'true');
+      editForm.reset();
+    }
+
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (editingIndex === null) return;
+
+      const updatedId = editForm.elements['edit-passenger-id'].value.trim().toUpperCase();
+
+      if(passengers.some((p, idx) => p.id === updatedId && idx !== editingIndex)) {
+        alert('Passenger ID already exists.');
+        return;
+      }
+
+      passengers[editingIndex] = {
+        id: updatedId,
+        name: editForm.elements['edit-passenger-name'].value.trim(),
+        age: parseInt(editForm.elements['edit-passenger-age'].value, 10),
+        gender: editForm.elements['edit-passenger-gender'].value.trim(),
+        flightNumber: editForm.elements['edit-passenger-flight'].value.trim().toUpperCase(),
+      };
+
+      savePassengers();
+      renderPassengers();
+      closeEditModal();
+    });
+
+    editForm.querySelector('button.cancel').addEventListener('click', e => {
+      e.preventDefault();
+      closeEditModal();
+    });
+
+    editModal.addEventListener('click', e => {
+      if (e.target === editModal) closeEditModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && editModal.classList.contains('active')) closeEditModal();
+    });
+
+    renderPassengers();
+  })();
+</script>
+</body>
+</html>
